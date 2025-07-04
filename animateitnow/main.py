@@ -3,7 +3,10 @@ import os
 import re
 import subprocess
 import sys
+
 import openai
+import google.generativeai as genai
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -47,7 +50,7 @@ def extract_class_name(code):
     match = re.search(r'class\s+(\w+)\s*\((?:manim\.)?Scene\)', code)
     return match.group(1) if match else None
 
-def generate_manim_code(prompt, model_name):
+def generate_manim_code(prompt, model_name, use_gemini=False):
     """
     Generates Manim code from a text prompt using the OpenRouter API.
     """
@@ -63,21 +66,35 @@ You are an expert Manim programmer. Your task is to generate a single, self-cont
 6.  **No Comments:** Do not add explanatory comments to the Python code itself.
 """
     try:
-        print(f"🤖 Sending request to OpenRouter model: {model_name}...")
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ],
-        )
-        # Check for a valid response
-        if not response.choices or not response.choices[0].message.content:
-            print("Error: The API returned an empty response.")
-            return None
-            
-        generated_code = response.choices[0].message.content
+        if use_gemini:
+            gemini_key = os.getenv("GEMINI_API_KEY")
+            if not gemini_key:
+                print("❌ GEMINI_API_KEY not set in your .env file.")
+                return None
+
+            genai.configure(api_key=gemini_key)
+            model = genai.GenerativeModel('gemini-2.5-pro')
+            response = model.generate_content(
+                [system_prompt, prompt]
+            )
+
+            generated_code = response.text
+        else:
+            print(f"🤖 Sending request to OpenRouter model: {model_name}...")
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            if not response.choices or not response.choices[0].message.content:
+                print("Error: The API returned an empty response.")
+                return None
+            generated_code = response.choices[0].message.content
+
         return clean_generated_code(generated_code)
+
 
     except openai.APIError as e:
         print(f"❌ OpenRouter API Error: {e}")
@@ -92,6 +109,7 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument('prompt', help='A description of the animation you want to create.')
+    parser.add_argument('--gemini', action='store_true', help="Use Gemini Pro 2.5 instead of OpenRouter")
     parser.add_argument('--output', '-o', default='generated_scene.py', help='Output filename for the Python script.')
     parser.add_argument(
         '--quality', '-q',
@@ -113,7 +131,7 @@ def main():
 
     # Step 1: Generate Code
     print(f"✨ Generating Manim code for: '{args.prompt}'...")
-    code = generate_manim_code(args.prompt, model_name=args.model)
+    code = generate_manim_code(args.prompt, model_name=args.model, use_gemini=args.gemini)
 
     if not code:
         print("❌ Code generation failed. Exiting.")
