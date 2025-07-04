@@ -107,6 +107,7 @@ def main():
         help=f"The OpenRouter model to use for generation.\n(Default: {DEFAULT_MODEL})"
     )
     parser.add_argument('--no-render', action='store_true', help="Only generate the code; don't render the video.")
+    parser.add_argument('--version', action='version', version='AnimateItNow 0.1.3 - Made by Mahesh Paul J')
 
     args = parser.parse_args()
 
