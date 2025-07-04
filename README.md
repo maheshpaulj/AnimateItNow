@@ -55,8 +55,7 @@ pip install -r requirements.txt
 
 1. Download & install [MiKTeX](https://miktex.org/download)
 2. Enable **package-on-the-fly** installation
-3. Add `miktex\bin\x64` to your system's `PATH`
-4. Run:
+3. Open the MiKTeX and check for updates
 
 ```bash
 mpm --update-db
