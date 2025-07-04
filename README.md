@@ -94,6 +94,7 @@ animateitnow "Show rotating Earth with axis labels" -o earth.py -q h
 | `--quality, -q` | Rendering quality: `l`, `m`, `h`, `p`, `k` |
 | `--model, -m`   | Choose OpenRouter model                    |
 | `--no-render`   | Generate code but don't render             |
+| `--gemini`      | Use Gemini 2.5 Pro AI                      |
 
 ---
 
