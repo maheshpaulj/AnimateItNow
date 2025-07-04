@@ -4,6 +4,8 @@ import re
 import subprocess
 import sys
 import openai
+from dotenv import load_dotenv
+load_dotenv()
 
 # --- CONFIGURATION ---
 # IMPORTANT: Do not hardcode your API key. Use an environment variable.
@@ -11,12 +13,9 @@ import openai
 # 2. Set the environment variable:
 #   - In Linux/macOS: export OPENROUTER_API_KEY="sk-or-..."
 #   - In Windows:      set OPENROUTER_API_KEY="sk-or-..."
-try:
-    api_key = os.environ["OPENROUTER_API_KEY"]
-
-except KeyError:
-    print("FATAL: OPENROUTER_API_KEY environment variable not set.")
-    print("Please get a key from https://openrouter.ai/keys and set the environment variable.")
+api_key = os.getenv("OPENROUTER_API_KEY")
+if not api_key:
+    print("❌ OPENROUTER_API_KEY is not set. Please create a .env file.")
     sys.exit(1)
 
 # NEW: Initialize the OpenAI client to point to OpenRouter
